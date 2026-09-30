@@ -1,0 +1,36 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # This project uses Vite 8, which requires Node.js 20.19+ or 22.12+.
+  # Netlify's default Node version can be older than that, which makes the
+  # build fail outright (and a failed first build shows as a 404 - there's
+  # nothing published yet). Pinning it here avoids that.
+  NODE_VERSION = "22"
+
+# SPA routing: let the app's own router (if any is added later) handle paths.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Enables SharedArrayBuffer so multi-threaded WASM works for both the
+    # Kokoro TTS model (onnxruntime-web) and, if you switch to it later,
+    # the multi-thread FFmpeg core. Everything in this app is self-hosted
+    # (no external fonts/scripts), so this is safe to enable site-wide.
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
+[[headers]]
+  for = "/ffmpeg/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
